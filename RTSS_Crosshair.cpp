@@ -73,11 +73,33 @@ DWORD WINAPI ThreadProc(LPVOID param)
 	int crossX = 0, crossY = 0, crossSize = 100;
 	bool changeState = false;
 	TCHAR crossFormat[256];
-	//HKEY hKey;
-	//RegOpenKey(HKEY_LOCAL_MACHINE, "Software\\Unwinder\\RTSS", &hKey)
-	//RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Unwinder\\RTSS", 0, KEY_READ, &hKey) KEY_READ KEY_WRITE
+	
+	DWORD tempVar;
+	DWORD tempSize = sizeof(tempVar);
+	if (ERROR_SUCCESS == RegGetValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "x_coord", RRF_RT_REG_DWORD, NULL, &tempVar, &tempSize)) {
+		crossX = tempVar;
+		changeState = true;
+		tempSize = sizeof(tempVar);
+	}
+	
+	if (ERROR_SUCCESS == RegGetValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "y_coord", RRF_RT_REG_DWORD, NULL, &tempVar, &tempSize)) {
+		crossY = tempVar;
+		changeState = true;
+		tempSize = sizeof(tempVar);
+	}
+
+	if (ERROR_SUCCESS == RegGetValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "size", RRF_RT_REG_DWORD, NULL, &tempVar, &tempSize)) {
+		crossSize = tempVar;
+		changeState = true;
+	}
 	
 	while (TRUE) {
+
+		if (GetAsyncKeyState(VK_RCONTROL) && GetAsyncKeyState(VK_DECIMAL)) {
+			RegSetKeyValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "x_coord", REG_DWORD, &crossX, (DWORD)sizeof(crossX));
+			RegSetKeyValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "y_coord", REG_DWORD, &crossY, (DWORD)sizeof(crossY));
+			RegSetKeyValueA(HKEY_CURRENT_USER, "Software\\RTSS_Crosshair", "size", REG_DWORD, &crossSize, (DWORD)sizeof(crossSize));
+		}
 
 		if (GetAsyncKeyState(VK_RCONTROL) && GetAsyncKeyState(VK_NUMPAD5)) {
 			RECT rect;
@@ -174,7 +196,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 			"RightCtrl + Num1, Num4, Num6, Num8 - move by 1 pixel \r\n"
 			"Num1, Num4, Num6, Num8 + RightShift - move by 50 pixels \r\n"
 			"RightCtrl + Num+ - increase size by 10% \r\n"
-			"RightCtrl + Num- - decrease size by 10% ",
+			"RightCtrl + Num- - decrease size by 10% \r\n"
+			"RightCtrl + Num. - save current position in registry",
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_READONLY, // 
 			2, 2, 400, 122,
 			hwnd, (HMENU)1,
