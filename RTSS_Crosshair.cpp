@@ -4,7 +4,8 @@
 #pragma comment(linker, "/NODEFAULTLIB")
 #pragma comment(linker, "/INCREMENTAL:NO")
 
-#define UniqueMapName "RTSS_Crosshair_Overlay"
+#define Map1 "RTSS_Crosshair_Overlay"
+#define Map2 "RTSS_Crosshair_Placeholder"
 
 typedef struct {
 	HANDLE hMapFile;
@@ -15,8 +16,8 @@ THREAD_PARAM param;
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 DWORD WINAPI ThreadProc(LPVOID param);
-BOOL UpdateOSD(LPCSTR lpText);
-void ReleaseOSD();
+BOOL UpdateOSD(LPCSTR lpText, LPCSTR mapName);
+void ReleaseOSD(LPCSTR mapName);
 
 void WinMainCRTStartup()
 {
@@ -72,7 +73,10 @@ DWORD WINAPI ThreadProc(LPVOID param)
 	int crossX = 0, crossY = 0, crossSize = 100;
 	bool changeState = false;
 	TCHAR crossFormat[256];
-
+	//HKEY hKey;
+	//RegOpenKey(HKEY_LOCAL_MACHINE, "Software\\Unwinder\\RTSS", &hKey)
+	//RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Unwinder\\RTSS", 0, KEY_READ, &hKey) KEY_READ KEY_WRITE
+	
 	while (TRUE) {
 
 		if (GetAsyncKeyState(VK_RCONTROL) && GetAsyncKeyState(VK_NUMPAD5)) {
@@ -145,7 +149,8 @@ DWORD WINAPI ThreadProc(LPVOID param)
 		if (changeState) {
 			changeState = false;
 			wsprintf(crossFormat, TEXT("<P=%d,%d><S=%d>+"), crossX, crossY, crossSize);
-			UpdateOSD(crossFormat);
+			UpdateOSD(crossFormat, Map1);
+			UpdateOSD("<P=0,0><S=100>", Map2);
 		}
 		
 		Sleep(100);
@@ -156,7 +161,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg) {
 	case WM_DESTROY:
-		ReleaseOSD();
+		ReleaseOSD(Map1);
+		ReleaseOSD(Map2);
 		ExitProcess(0);
 		break;
 
@@ -175,7 +181,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 			((LPCREATESTRUCT)(lp))->hInstance, NULL
 		);
 
-		UpdateOSD("+");
+		UpdateOSD("+", Map1);
+		UpdateOSD("", Map2);
 
 		DWORD dwThreadId;
 		CreateThread(NULL, 0, ThreadProc, NULL, 0, &dwThreadId);
@@ -188,7 +195,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-BOOL UpdateOSD(LPCSTR lpText)
+BOOL UpdateOSD(LPCSTR lpText, LPCSTR mapName)
 {
 	BOOL bResult	= FALSE;
 
@@ -217,10 +224,10 @@ BOOL UpdateOSD(LPCSTR lpText)
 						if (dwPass)
 						{
 							if (!lstrlen(pEntry->szOSDOwner))
-								lstrcpy(pEntry->szOSDOwner, UniqueMapName);
+								lstrcpy(pEntry->szOSDOwner, mapName);
 						}
 
-						if (!lstrcmp(pEntry->szOSDOwner, UniqueMapName))
+						if (!lstrcmp(pEntry->szOSDOwner, mapName))
 						{
 							if (pMem->dwVersion >= 0x00020007)
 								//use extended text slot for v2.7 and higher shared memory, it allows displaying 4096 symbols
@@ -270,7 +277,7 @@ BOOL UpdateOSD(LPCSTR lpText)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void ReleaseOSD()
+void ReleaseOSD(LPCSTR mapName)
 {
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, TEXT("RTSSSharedMemoryV2"));
 
@@ -289,7 +296,7 @@ void ReleaseOSD()
 				{
 					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
-					if (!lstrcmp(pEntry->szOSDOwner, UniqueMapName))
+					if (!lstrcmp(pEntry->szOSDOwner, mapName))
 					{
 						SecureZeroMemory(pEntry, pMem->dwOSDEntrySize);
 						pMem->dwOSDFrame++;
