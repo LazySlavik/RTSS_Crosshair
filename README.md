@@ -2,7 +2,8 @@
 Crosshair overlay for RivaTuner Statistics Server <br/>
 A simple app that prints '+' symbol in RTSS overlay and lets you control position and size of the symbol. <br/>
 ## Usage
-All controls are shown on launch, for some reason order of pressing RightShift combination matters. <br/>
+All controls are shown on launch. <br/>
+For some reason order of pressing RightShift combination matters. <br/>
 If you set "Onscreen display zoom" setting in rivatuner above zero, center coordinates gonna move past screen borders. If you need that zoom setting, you have to manually move symbol from default position. <br/>
 Adjusting position on every launch was annoying, so now you can save current settings in registry key (HKEY_CURRENT_USER\Software\RTSS_Crosshair). <br/>
 ## Building your own binary
