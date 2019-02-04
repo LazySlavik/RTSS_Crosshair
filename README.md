@@ -7,9 +7,13 @@ All controls are shown on launch. <br/>
 For some reason order of pressing RightShift combination matters. <br/>
 If you set "Onscreen display zoom" setting in rivatuner above zero, center coordinates gonna move past screen borders. If you need that zoom setting, you have to manually move symbol from default position. <br/>
 Adjusting position on every launch was annoying, so now you can save current settings in registry key (HKEY_CURRENT_USER\Software\RTSS_Crosshair). <br/>
+Also, with v2 you can choose your own symbol to display on screen. <br/>
 ## Building your own binary
+#### v0.7
 You need an "nmake" and "cl" installed and have their path be in PATH variable. <br/>
 If you have Visual Studio installed you already got them, just launch "VS Command Prompt" via Tools->Command Prompt, then change directory to one where you downloaded the files and execute "nmake /f makefile". <br/>
+#### v2
+Get Visual Studio, open project, click "build".  <br/>
 ## Credits
 Thank you, ShittyCodeMan for creating and sharing [RTSS_Timer](https://github.com/ShittyCodeMan/RTSS_Timer). <br/>
 Thanks Microsoft for MSDN. <br/>
